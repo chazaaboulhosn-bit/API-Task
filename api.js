@@ -6,14 +6,45 @@ const app = express();
 app.use(fileUpload());
 
 app.post("/pdf-to-text", async (req, res) => {
-    // conversion logic
+   const pdfParse = require("pdf-parse");
 
-    // step 1: handle the file upload from res.files.file, ensure it is in PDF format
-    // step 2: store it in a variable
-    // step 3: send it back to the frontend as json data
-    // step 4: handle failure with the correct code
+app.post("/pdf-to-text", async (req, res) => {
+  try {
+    if (!req.files || !req.files.file) {
+      return res.status(400).json({
+        ok: false,
+        error: "No file uploaded",
+      });
+    }
+
+    const file = req.files.file;
+
+    if (file.mimetype !== "application/pdf") {
+      return res.status(415).json({
+        ok: false,
+        error: "Only PDF files are allowed",
+      });
+    }
+
+    const pdfBuffer = file.data;
+
+    const result = await pdfParse(pdfBuffer);
+
+    return res.status(200).json({
+      ok: true,
+      text: result.text,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      error: "Server error",
+    });
+  }
+});
 });
 
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
+
